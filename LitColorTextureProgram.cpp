@@ -75,6 +75,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"uniform vec3 LIGHT_DIRECTION;\n"
 		"uniform vec3 LIGHT_ENERGY;\n"
 		"uniform float LIGHT_CUTOFF;\n"
+		"uniform vec4 COLOR_MUL;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
 		"in vec4 color;\n"
@@ -93,7 +94,8 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"		float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
 		"		e = nl * LIGHT_ENERGY;\n"
 		"	} else if (LIGHT_TYPE == 1) { //hemi light \n"
-		"		e = (dot(n,-LIGHT_DIRECTION) * 0.5 + 0.5) * LIGHT_ENERGY;\n"
+		"		float h = dot(n,-LIGHT_DIRECTION) * 0.5 + 0.5;\n"
+		"		e = mix(0.62, 1.0, h) * LIGHT_ENERGY;\n" // keep white albedo readable on all faces
 		"	} else if (LIGHT_TYPE == 2) { //spot light \n"
 		"		vec3 l = (LIGHT_LOCATION - position);\n"
 		"		float dis2 = dot(l,l);\n"
@@ -105,7 +107,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 		"	} else { //(LIGHT_TYPE == 3) //directional light \n"
 		"		e = max(0.0, dot(n,-LIGHT_DIRECTION)) * LIGHT_ENERGY;\n"
 		"	}\n"
-		"	vec4 albedo = texture(TEX, texCoord) * color;\n"
+		"	vec4 albedo = texture(TEX, texCoord) * color * COLOR_MUL;\n"
 		"	fragColor = vec4(e*albedo.rgb, albedo.a);\n"
 		/* DEBUG: check color output linearity:
 		"	float t = random(gl_FragCoord.xy/1280.0);\n"
@@ -141,6 +143,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	LIGHT_DIRECTION_vec3 = glGetUniformLocation(program, "LIGHT_DIRECTION");
 	LIGHT_ENERGY_vec3 = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float = glGetUniformLocation(program, "LIGHT_CUTOFF");
+	COLOR_MUL_vec4 = glGetUniformLocation(program, "COLOR_MUL");
 
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
@@ -149,6 +152,7 @@ LitColorTextureProgram::LitColorTextureProgram() {
 	glUseProgram(program); //bind program -- glUniform* calls refer to this program now
 
 	glUniform1i(TEX_sampler2D, 0); //set TEX to sample from GL_TEXTURE0
+	glUniform4f(COLOR_MUL_vec4, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	glUseProgram(0); //unbind program -- glUniform* calls refer to ??? now
 }

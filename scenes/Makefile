@@ -10,18 +10,16 @@ else
 	BLENDER = blender
 endif
 
-EXPORT_MESHES=export-meshes.py
-EXPORT_SCENE=export-scene.py
-
 DIST=../dist
 
-all : \
-	$(DIST)/hexapod.pnct \
-	$(DIST)/hexapod.scene \
+all : $(DIST)/lightbound.pnct
 
+# Lightbound: procedural placeholders + Blender props from dist/objects.blend
+$(DIST)/lightbound-props.pnct : ../dist/objects.blend export-lightbound-props.py
+	$(BLENDER) --background --python export-lightbound-props.py -- '../dist/objects.blend' '$@'
 
-$(DIST)/hexapod.scene : hexapod.blend $(EXPORT_SCENE)
-	$(BLENDER) --background --python $(EXPORT_SCENE) -- '$<':Main '$@'
+$(DIST)/lightbound-base.pnct : generate-lightbound-meshes.py
+	python3 generate-lightbound-meshes.py '$@'
 
-$(DIST)/hexapod.pnct : hexapod.blend $(EXPORT_MESHES)
-	$(BLENDER) --background --python $(EXPORT_MESHES) -- '$<':Main '$@'
+$(DIST)/lightbound.pnct : $(DIST)/lightbound-base.pnct $(DIST)/lightbound-props.pnct merge-pnct.py
+	python3 merge-pnct.py '$@' $(DIST)/lightbound-base.pnct $(DIST)/lightbound-props.pnct

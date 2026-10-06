@@ -28,6 +28,9 @@ struct LitColorTextureProgram {
 	GLuint LIGHT_DIRECTION_vec3 = -1U;
 	GLuint LIGHT_ENERGY_vec3 = -1U;
 	GLuint LIGHT_CUTOFF_float = -1U;
+
+	// Multiplies vertex color * texture (default white). Used to tint emitters by laser color.
+	GLuint COLOR_MUL_vec4 = -1U;
 	
 	//Textures:
 	//TEXTURE0 - texture that is accessed by TexCoord

@@ -2,12 +2,13 @@
 BLENDER="C:\Program Files\Blender Foundation\Blender 4.2.1\blender.exe"
 DIST=../dist
 
-all : \
-    $(DIST)/hexapod.pnct \
-    $(DIST)/hexapod.scene \
+all : $(DIST)/lightbound.pnct
 
-$(DIST)/hexapod.scene : hexapod.blend export-scene.py
-    $(BLENDER) --background --python export-scene.py -- "hexapod.blend:Main" "$(DIST)/hexapod.scene"
+$(DIST)/lightbound-props.pnct : ../dist/objects.blend export-lightbound-props.py
+	$(BLENDER) --background --python export-lightbound-props.py -- "../dist/objects.blend" "$@"
 
-$(DIST)/hexapod.pnct : hexapod.blend export-meshes.py
-    $(BLENDER) --background --python export-meshes.py -- "hexapod.blend:Main" "$(DIST)/hexapod.pnct" 
+$(DIST)/lightbound-base.pnct : generate-lightbound-meshes.py
+	python generate-lightbound-meshes.py "$@"
+
+$(DIST)/lightbound.pnct : $(DIST)/lightbound-base.pnct $(DIST)/lightbound-props.pnct merge-pnct.py
+	python merge-pnct.py "$@" $(DIST)/lightbound-base.pnct $(DIST)/lightbound-props.pnct
